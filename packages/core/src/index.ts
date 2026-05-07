@@ -26,6 +26,11 @@ export type {
 } from './types/generator.js';
 
 export type {
+  Reranker,
+  RerankOptions,
+} from './types/reranker.js';
+
+export type {
   RagConfig,
   RagSDK,
   ChunkOptions,

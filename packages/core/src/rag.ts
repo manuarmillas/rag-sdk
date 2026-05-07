@@ -115,6 +115,22 @@ export function rag<
     }
   }
 
+  const reranker = config.reranker;
+  if (reranker !== undefined) {
+    if (!reranker.id || typeof reranker.id !== 'string') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'Reranker must have a valid id',
+      );
+    }
+    if (typeof reranker.rerank !== 'function') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'Reranker must implement rerank()',
+      );
+    }
+  }
+
   const chunkOpts: ChunkOptions | undefined = config.chunk;
   validateChunkOptions(chunkOpts);
 
@@ -136,6 +152,7 @@ export function rag<
       return queryPipeline(text, options, {
         provider,
         store,
+        reranker,
         defaultNamespace: config.namespace,
       });
     },
@@ -144,6 +161,7 @@ export function rag<
       return generatePipeline(text, options, {
         provider,
         store,
+        reranker,
         defaultNamespace: config.namespace,
         generator,
       });
@@ -166,6 +184,7 @@ export function rag<
       const queryResult = await queryPipeline(text, options, {
         provider,
         store,
+        reranker,
         defaultNamespace: config.namespace,
       });
 

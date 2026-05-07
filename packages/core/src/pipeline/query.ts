@@ -1,6 +1,7 @@
 import type { Metadata, QueryResult } from '../types/document.js';
 import type { EmbeddingProvider } from '../types/provider.js';
 import type { VectorStore, QueryOptions } from '../types/store.js';
+import type { Reranker } from '../types/reranker.js';
 import {
   ValidationError,
   ProviderError,
@@ -15,6 +16,7 @@ function isPositiveInteger(value: unknown): value is number {
 export interface QueryDeps<M extends Metadata = Metadata> {
   provider: EmbeddingProvider;
   store: VectorStore<M>;
+  reranker?: Reranker<M>;
   defaultNamespace?: string;
 }
 
@@ -82,6 +84,26 @@ export async function queryPipeline<M extends Metadata>(
       err instanceof Error ? err.message : 'Store query failed',
       err,
     );
+  }
+
+  if (deps.reranker) {
+    try {
+      results = await deps.reranker.rerank(
+        text,
+        results,
+        options?.rerank,
+      );
+    } catch (err) {
+      if (err instanceof ProviderError) {
+        throw err;
+      }
+      throw new ProviderError(deps.reranker.id, 'rerank', err);
+    }
+
+    const topN = options?.rerank?.topN;
+    if (topN !== undefined && topN >= 0 && results.length > topN) {
+      results = results.slice(0, topN);
+    }
   }
 
   return {

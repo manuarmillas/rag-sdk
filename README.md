@@ -10,6 +10,7 @@ A modular, type-safe SDK for building Retrieval-Augmented Generation (RAG) pipel
 | `@rag-sdk/embedding` | Embedding provider adapters (OpenAI) |
 | `@rag-sdk/store` | Vector store adapters — Memory (zero deps), Qdrant, Pinecone, pgvector |
 | `@rag-sdk/generator` | LLM generation adapters (OpenAI) |
+| `@rag-sdk/reranker` | Reranker adapters (Cohere) |
 
 ## Installation
 
@@ -61,6 +62,22 @@ const result = await sdk.generate('What is RAG SDK?');
 console.log(result.answer);
 ```
 
+### Rerank (Retrieve → Rerank)
+
+```ts
+import { createCohereReranker } from '@rag-sdk/reranker';
+
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  reranker: createCohereReranker({ apiKey: process.env.COHERE_API_KEY }),
+});
+
+await sdk.ingest([{ content: 'RAG SDK supports reranking for better relevance.' }]);
+const result = await sdk.query('What improves relevance?', { topK: 10, rerank: { topN: 3 } });
+console.log(result.results); // top 3 reranked results
+```
+
 ### Production Store (Qdrant)
 
 ```ts
@@ -80,7 +97,8 @@ const store = createQdrantStore({
     ↑
     ├── @rag-sdk/embedding   — EmbeddingProvider adapters
     ├── @rag-sdk/store       — VectorStore adapters (memory, Qdrant, Pinecone, pgvector)
-    └── @rag-sdk/generator   — Generator adapters (OpenAI LLM)
+    ├── @rag-sdk/generator   — Generator adapters (OpenAI LLM)
+    └── @rag-sdk/reranker    — Reranker adapters (Cohere)
 ```
 
 All adapter packages use optional peer dependencies — you only install the vendor SDKs you need.

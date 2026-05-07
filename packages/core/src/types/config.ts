@@ -3,6 +3,7 @@ import type { EmbeddingProvider } from './provider.js';
 import type { VectorStore, QueryOptions } from './store.js';
 import type { Chunker } from '../chunker/types.js';
 import type { Generator, GenerateOptions, GenerationResult } from './generator.js';
+import type { Reranker } from './reranker.js';
 
 export interface RagConfig<
   M extends Metadata = Metadata,
@@ -13,6 +14,7 @@ export interface RagConfig<
   store: S;
   chunker?: Chunker<M>;
   generator?: Generator<M>;
+  reranker?: Reranker<M>;
   namespace?: string;
   chunk?: ChunkOptions;
 }

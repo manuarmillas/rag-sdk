@@ -7,6 +7,7 @@ export default defineConfig({
       '@rag-sdk/core': path.resolve(__dirname, 'packages/core/src/index.ts'),
       '@rag-sdk/store': path.resolve(__dirname, 'packages/store/src/index.ts'),
       '@rag-sdk/generator': path.resolve(__dirname, 'packages/generator/src/index.ts'),
+      '@rag-sdk/reranker': path.resolve(__dirname, 'packages/reranker/src/index.ts'),
     },
   },
   test: {

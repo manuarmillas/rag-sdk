@@ -1,4 +1,5 @@
 import type { Metadata, MetadataFilter, Vector, SearchResult } from './document.js';
+import type { RerankOptions } from './reranker.js';
 
 export interface VectorStore<M extends Metadata = Metadata> {
   readonly id?: string;
@@ -13,4 +14,5 @@ export interface QueryOptions {
   filter?: MetadataFilter;
   namespace?: string;
   includeMetadata?: boolean;
+  rerank?: RerankOptions;
 }
