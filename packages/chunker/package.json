@@ -1,0 +1,41 @@
+{
+  "name": "@rag-sdk/chunker",
+  "version": "0.1.0",
+  "description": "Advanced chunking adapters for RAG SDK",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rag-sdk/rag-sdk.git",
+    "directory": "packages/chunker"
+  },
+  "author": "RAG SDK Team",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rag-sdk/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  }
+}

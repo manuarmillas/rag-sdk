@@ -42,6 +42,7 @@ export type { Chunker } from './chunker/types.js';
 
 // Chunking
 export { RecursiveCharacterTextSplitter } from './chunker/recursive-splitter.js';
+export { MarkdownChunker } from './chunker/markdown-chunker.js';
 
 // Validation
 export { validateChunkOptions } from './validate.js';

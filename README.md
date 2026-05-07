@@ -11,6 +11,7 @@ A modular, type-safe SDK for building Retrieval-Augmented Generation (RAG) pipel
 | `@rag-sdk/store` | Vector store adapters — Memory (zero deps), Qdrant, Pinecone, pgvector |
 | `@rag-sdk/generator` | LLM generation adapters (OpenAI) |
 | `@rag-sdk/reranker` | Reranker adapters (Cohere) |
+| `@rag-sdk/chunker` | Semantic chunking (requires EmbeddingProvider) |
 
 ## Installation
 
@@ -78,6 +79,32 @@ const result = await sdk.query('What improves relevance?', { topK: 10, rerank: {
 console.log(result.results); // top 3 reranked results
 ```
 
+### Semantic Chunking
+
+```ts
+import { SemanticChunker } from '@rag-sdk/chunker';
+
+const chunker = new SemanticChunker(provider, { chunkSize: 500, threshold: 0.5 });
+
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  chunker,
+});
+```
+
+### Markdown Chunking
+
+```ts
+import { MarkdownChunker } from '@rag-sdk/core';
+
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  chunker: new MarkdownChunker({ chunkSize: 1000, overlap: 200 }),
+});
+```
+
 ### Production Store (Qdrant)
 
 ```ts
@@ -98,7 +125,8 @@ const store = createQdrantStore({
     ├── @rag-sdk/embedding   — EmbeddingProvider adapters
     ├── @rag-sdk/store       — VectorStore adapters (memory, Qdrant, Pinecone, pgvector)
     ├── @rag-sdk/generator   — Generator adapters (OpenAI LLM)
-    └── @rag-sdk/reranker    — Reranker adapters (Cohere)
+    ├── @rag-sdk/reranker    — Reranker adapters (Cohere)
+    └── @rag-sdk/chunker     — SemanticChunker (uses EmbeddingProvider port)
 ```
 
 All adapter packages use optional peer dependencies — you only install the vendor SDKs you need.
