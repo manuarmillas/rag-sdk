@@ -115,6 +115,16 @@ export function rag<
     }
   }
 
+  const keywordSearcher = config.keywordSearcher;
+  if (keywordSearcher !== undefined) {
+    if (typeof keywordSearcher.keywordSearch !== 'function') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'KeywordSearcher must implement keywordSearch()',
+      );
+    }
+  }
+
   const reranker = config.reranker;
   if (reranker !== undefined) {
     if (!reranker.id || typeof reranker.id !== 'string') {
@@ -153,6 +163,7 @@ export function rag<
         provider,
         store,
         reranker,
+        keywordSearcher,
         defaultNamespace: config.namespace,
       });
     },
@@ -162,6 +173,7 @@ export function rag<
         provider,
         store,
         reranker,
+        keywordSearcher,
         defaultNamespace: config.namespace,
         generator,
       });
@@ -185,6 +197,7 @@ export function rag<
         provider,
         store,
         reranker,
+        keywordSearcher,
         defaultNamespace: config.namespace,
       });
 

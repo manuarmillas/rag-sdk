@@ -6,7 +6,7 @@ A modular, type-safe SDK for building Retrieval-Augmented Generation (RAG) pipel
 
 | Package | Description |
 |---------|-------------|
-| `@rag-sdk/core` | Core ports, pipelines (ingest, query, generate), error types, and zero-dep chunkers |
+| `@rag-sdk/core` | Core ports, pipelines (ingest, query, generate, hybrid search), error types, and zero-dep chunkers |
 | `@rag-sdk/embedding` | Embedding provider adapters (OpenAI) |
 | `@rag-sdk/store` | Vector store adapters — Memory (zero deps), Qdrant, Pinecone, pgvector |
 | `@rag-sdk/generator` | LLM generation adapters (OpenAI) |
@@ -77,6 +77,28 @@ const sdk = rag({
 await sdk.ingest([{ content: 'RAG SDK supports reranking for better relevance.' }]);
 const result = await sdk.query('What improves relevance?', { topK: 10, rerank: { topN: 3 } });
 console.log(result.results); // top 3 reranked results
+```
+
+### Hybrid Search (Vector + Keyword)
+
+```ts
+const keywordSearcher = {
+  id: 'my-keyword-index',
+  async keywordSearch(text, options) {
+    // Your keyword search implementation (e.g. Meilisearch, Elasticsearch, SQLite FTS)
+    return [{ id: '1', score: 1, content: '...', metadata: {} }];
+  },
+};
+
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  keywordSearcher,
+});
+
+await sdk.ingest([{ content: 'RAG SDK supports hybrid vector + keyword search.' }]);
+const result = await sdk.query('hybrid search', { topK: 10, hybrid: { rrfK: 60 } });
+console.log(result.results); // fused and re-ranked via Reciprocal Rank Fusion
 ```
 
 ### Semantic Chunking

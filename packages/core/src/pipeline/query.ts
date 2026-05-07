@@ -1,7 +1,9 @@
-import type { Metadata, QueryResult } from '../types/document.js';
+import type { Metadata, QueryResult, SearchResult } from '../types/document.js';
 import type { EmbeddingProvider } from '../types/provider.js';
 import type { VectorStore, QueryOptions } from '../types/store.js';
 import type { Reranker } from '../types/reranker.js';
+import type { KeywordSearcher } from '../types/searcher.js';
+import { rrfFusion } from './hybrid.js';
 import {
   ValidationError,
   ProviderError,
@@ -17,6 +19,7 @@ export interface QueryDeps<M extends Metadata = Metadata> {
   provider: EmbeddingProvider;
   store: VectorStore<M>;
   reranker?: Reranker<M>;
+  keywordSearcher?: KeywordSearcher<M>;
   defaultNamespace?: string;
 }
 
@@ -84,6 +87,29 @@ export async function queryPipeline<M extends Metadata>(
       err instanceof Error ? err.message : 'Store query failed',
       err,
     );
+  }
+
+  if (
+    deps.keywordSearcher &&
+    options?.hybrid?.enabled !== false
+  ) {
+    let keywordResults: SearchResult<M>[];
+    try {
+      keywordResults = await deps.keywordSearcher.keywordSearch(text, {
+        topK,
+        filter: options?.filter,
+        namespace,
+        includeMetadata: options?.includeMetadata,
+      });
+    } catch (err) {
+      throw new StoreError(
+        'STORE_ERROR',
+        'Keyword search failed',
+        err,
+      );
+    }
+
+    results = rrfFusion(results, keywordResults, options?.hybrid);
   }
 
   if (deps.reranker) {

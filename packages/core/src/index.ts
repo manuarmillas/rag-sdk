@@ -31,6 +31,11 @@ export type {
 } from './types/reranker.js';
 
 export type {
+  KeywordSearcher,
+  HybridOptions,
+} from './types/searcher.js';
+
+export type {
   RagConfig,
   RagSDK,
   ChunkOptions,
