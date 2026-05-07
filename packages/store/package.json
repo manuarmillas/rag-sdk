@@ -1,0 +1,61 @@
+{
+  "name": "@rag-sdk/store",
+  "version": "0.1.0",
+  "description": "Vector store adapters for RAG SDK",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rag-sdk/rag-sdk.git",
+    "directory": "packages/store"
+  },
+  "author": "RAG SDK Team",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rag-sdk/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@qdrant/js-client-rest": "^1.0.0",
+    "@pinecone-database/pinecone": "^3.0.0 || ^4.0.0",
+    "pg": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@qdrant/js-client-rest": {
+      "optional": true
+    },
+    "@pinecone-database/pinecone": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@qdrant/js-client-rest": "^1.13.0",
+    "@pinecone-database/pinecone": "^4.1.0",
+    "@types/pg": "^8.11.11",
+    "pg": "^8.14.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  }
+}
