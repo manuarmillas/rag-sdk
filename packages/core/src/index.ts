@@ -18,10 +18,19 @@ export type { EmbeddingProvider } from './types/provider.js';
 export type { VectorStore, QueryOptions } from './types/store.js';
 
 export type {
+  Generator,
+  GenerateRequest,
+  GenerateOptions,
+  GenerationResult,
+  GenerationUsage,
+} from './types/generator.js';
+
+export type {
   RagConfig,
   RagSDK,
   ChunkOptions,
   IngestOptions,
+  GeneratePipelineOptions,
 } from './types/config.js';
 
 export type { Chunker } from './chunker/types.js';

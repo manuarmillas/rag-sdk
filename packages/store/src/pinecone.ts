@@ -73,7 +73,7 @@ export async function createPineconeStore<
       }));
 
       try {
-        await getNamespace(options?.namespace).upsert({ records: records as never[] });
+        await getNamespace(options?.namespace).upsert(records as never[]);
       } catch (err) {
         throw new StoreError(
           'STORE_ERROR',

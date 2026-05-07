@@ -1,12 +1,13 @@
 import type { Metadata } from './types/document.js';
 import type { EmbeddingProvider } from './types/provider.js';
 import type { VectorStore } from './types/store.js';
-import type { RagConfig, RagSDK, ChunkOptions } from './types/config.js';
+import type { RagConfig, RagSDK, ChunkOptions, GeneratePipelineOptions } from './types/config.js';
 import { RecursiveCharacterTextSplitter } from './chunker/recursive-splitter.js';
 import { ConfigurationError } from './errors.js';
 import { validateChunkOptions } from './validate.js';
 import { ingestPipeline } from './pipeline/ingest.js';
 import { queryPipeline } from './pipeline/query.js';
+import { generatePipeline } from './pipeline/generate.js';
 
 export function rag<
   M extends Metadata = Metadata,
@@ -92,6 +93,28 @@ export function rag<
     );
   }
 
+  const generator = config.generator;
+  if (generator !== undefined) {
+    if (!generator.id || typeof generator.id !== 'string') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'Generator must have a valid id',
+      );
+    }
+    if (!generator.modelId || typeof generator.modelId !== 'string') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'Generator must have a valid modelId',
+      );
+    }
+    if (typeof generator.generate !== 'function') {
+      throw new ConfigurationError(
+        'CONFIGURATION_ERROR',
+        'Generator must implement generate()',
+      );
+    }
+  }
+
   const chunkOpts: ChunkOptions | undefined = config.chunk;
   validateChunkOptions(chunkOpts);
 
@@ -115,6 +138,47 @@ export function rag<
         store,
         defaultNamespace: config.namespace,
       });
+    },
+
+    async generate(text, options?: GeneratePipelineOptions) {
+      return generatePipeline(text, options, {
+        provider,
+        store,
+        defaultNamespace: config.namespace,
+        generator,
+      });
+    },
+
+    async *generateStream(text, options?: GeneratePipelineOptions) {
+      if (!generator) {
+        throw new ConfigurationError(
+          'CONFIGURATION_ERROR',
+          'Generator is required for generateStream()',
+        );
+      }
+      if (!generator.generateStream) {
+        throw new ConfigurationError(
+          'CONFIGURATION_ERROR',
+          'Generator does not support streaming',
+        );
+      }
+
+      const queryResult = await queryPipeline(text, options, {
+        provider,
+        store,
+        defaultNamespace: config.namespace,
+      });
+
+      const generateOptions = options?.generate;
+
+      yield* generator.generateStream(
+        {
+          query: text,
+          context: queryResult.results,
+          systemPrompt: generateOptions?.systemPrompt,
+        },
+        generateOptions,
+      );
     },
   };
 }

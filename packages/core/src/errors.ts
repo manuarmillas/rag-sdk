@@ -15,7 +15,7 @@ export class ValidationError extends RagSdkError {}
 export class ProviderError extends RagSdkError {
   constructor(
     providerId: string,
-    operation: 'embed' | 'embedBatch',
+    operation: 'embed' | 'embedBatch' | 'generate' | 'generateStream' | 'rerank',
     cause: unknown,
   ) {
     super('PROVIDER_ERROR', `Provider ${providerId} failed during ${operation}`, cause);

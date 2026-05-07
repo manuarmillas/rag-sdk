@@ -48,19 +48,17 @@ describe('createPineconeStore', () => {
     ];
     await store.upsert(vectors, { namespace: 'ns' });
     expect(mockNamespace).toHaveBeenCalledWith('ns');
-    expect(mockUpsert).toHaveBeenCalledWith({
-      records: [
-        {
-          id: 'v1',
-          values: [1, 0, 0],
-          metadata: {
-            content: 'a',
-            documentId: 'd1',
-            chunkIndex: 0,
-          },
+    expect(mockUpsert).toHaveBeenCalledWith([
+      {
+        id: 'v1',
+        values: [1, 0, 0],
+        metadata: {
+          content: 'a',
+          documentId: 'd1',
+          chunkIndex: 0,
         },
-      ],
-    });
+      },
+    ]);
   });
 
   it('query delegates to Pinecone index and maps results', async () => {
