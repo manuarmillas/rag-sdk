@@ -63,6 +63,22 @@ const result = await sdk.generate('What is RAG SDK?');
 console.log(result.answer);
 ```
 
+### Stream Generate (RAG → Streaming Answer)
+
+```ts
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  generator: createOpenAIGenerator({ apiKey: process.env.OPENAI_API_KEY }),
+});
+
+await sdk.ingest([{ content: 'RAG SDK supports real-time streaming of generated answers.' }]);
+
+for await (const token of sdk.generateStream('How does streaming work?')) {
+  process.stdout.write(token);
+}
+```
+
 ### Rerank (Retrieve → Rerank)
 
 ```ts

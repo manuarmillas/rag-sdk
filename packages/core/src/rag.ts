@@ -8,6 +8,7 @@ import { validateChunkOptions } from './validate.js';
 import { ingestPipeline } from './pipeline/ingest.js';
 import { queryPipeline } from './pipeline/query.js';
 import { generatePipeline } from './pipeline/generate.js';
+import { generateStreamPipeline } from './pipeline/generate-stream.js';
 
 export function rag<
   M extends Metadata = Metadata,
@@ -180,37 +181,14 @@ export function rag<
     },
 
     async *generateStream(text, options?: GeneratePipelineOptions) {
-      if (!generator) {
-        throw new ConfigurationError(
-          'CONFIGURATION_ERROR',
-          'Generator is required for generateStream()',
-        );
-      }
-      if (!generator.generateStream) {
-        throw new ConfigurationError(
-          'CONFIGURATION_ERROR',
-          'Generator does not support streaming',
-        );
-      }
-
-      const queryResult = await queryPipeline(text, options, {
+      yield* generateStreamPipeline(text, options, {
         provider,
         store,
         reranker,
         keywordSearcher,
         defaultNamespace: config.namespace,
+        generator,
       });
-
-      const generateOptions = options?.generate;
-
-      yield* generator.generateStream(
-        {
-          query: text,
-          context: queryResult.results,
-          systemPrompt: generateOptions?.systemPrompt,
-        },
-        generateOptions,
-      );
     },
   };
 }
