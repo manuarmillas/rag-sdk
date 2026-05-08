@@ -15,9 +15,9 @@
  *   pnpm add @rag-sdk/generator @rag-sdk/reranker @rag-sdk/chunker
  */
 
-import { rag, MarkdownChunker, RecursiveCharacterTextSplitter } from '@rag-sdk/core';
+import { rag, MarkdownChunker, ConfigurationError } from '@rag-sdk/core';
 import { createOpenAI } from '@rag-sdk/embedding';
-import { createMemoryStore, createQdrantStore, createPgVectorStore } from '@rag-sdk/store';
+import { createMemoryStore, createQdrantStore } from '@rag-sdk/store';
 import { createOpenAIGenerator } from '@rag-sdk/generator';
 import { createCohereReranker } from '@rag-sdk/reranker';
 import { SemanticChunker } from '@rag-sdk/chunker';
@@ -163,7 +163,7 @@ these states to perform algorithms. Shor's algorithm factors large numbers effic
 async function hybridSearch() {
   // A KeywordSearcher can be any object implementing the port.
   // Here we show a toy example; in production you'd use a full-text index.
-  const toyKeywordSearcher = {
+  const toyKeywordSearcher: any = {
     id: 'toy-keyword',
     async keywordSearch(text: string, options: any) {
       // In production: delegate to Elasticsearch, Meilisearch, or Qdrant payload index.
@@ -242,7 +242,7 @@ async function productionQdrant() {
 
   const sdk = rag({
     provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY! }),
-    store: createQdrantStore({
+    store: await createQdrantStore({
       url: process.env.QDRANT_URL ?? 'http://localhost:6333',
       collectionName: 'my-documents',
       dimensions: 1536,
@@ -288,8 +288,6 @@ async function productionPgVector() {
 // ---------------------------------------------------------------------------
 
 async function errorHandling() {
-  import { ConfigurationError, ProviderError } from '@rag-sdk/core';
-
   // Without a generator, generate() throws ConfigurationError
   const sdk = rag({
     provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY! }),
@@ -311,11 +309,11 @@ async function errorHandling() {
 // 11. Custom metadata
 // ---------------------------------------------------------------------------
 
-interface MyMetadata {
+type MyMetadata = Record<string, unknown> & {
   source: string;
   author?: string;
   tags?: string[];
-}
+};
 
 async function customMetadata() {
   const sdk = rag<MyMetadata>({

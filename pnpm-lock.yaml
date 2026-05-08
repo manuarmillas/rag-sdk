@@ -33,6 +33,27 @@ importers:
         specifier: ^1.5.0
         version: 1.6.1(@types/node@20.19.39)
 
+  examples:
+    dependencies:
+      '@rag-sdk/chunker':
+        specifier: workspace:*
+        version: link:../packages/chunker
+      '@rag-sdk/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@rag-sdk/embedding':
+        specifier: workspace:*
+        version: link:../packages/embedding
+      '@rag-sdk/generator':
+        specifier: workspace:*
+        version: link:../packages/generator
+      '@rag-sdk/reranker':
+        specifier: workspace:*
+        version: link:../packages/reranker
+      '@rag-sdk/store':
+        specifier: workspace:*
+        version: link:../packages/store
+
   packages/chunker:
     dependencies:
       '@rag-sdk/core':

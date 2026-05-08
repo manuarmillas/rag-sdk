@@ -1,0 +1,13 @@
+{
+  "name": "@rag-sdk/examples",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@rag-sdk/core": "workspace:*",
+    "@rag-sdk/embedding": "workspace:*",
+    "@rag-sdk/store": "workspace:*",
+    "@rag-sdk/generator": "workspace:*",
+    "@rag-sdk/reranker": "workspace:*",
+    "@rag-sdk/chunker": "workspace:*"
+  }
+}
