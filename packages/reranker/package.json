@@ -34,15 +34,20 @@
     "@rag-sdk/core": "workspace:*"
   },
   "peerDependencies": {
-    "cohere-ai": "^7.0.0"
+    "cohere-ai": "^7.0.0",
+    "@huggingface/transformers": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "cohere-ai": {
+      "optional": true
+    },
+    "@huggingface/transformers": {
       "optional": true
     }
   },
   "devDependencies": {
     "cohere-ai": "^7.0.0",
+    "@huggingface/transformers": "^3.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.4.0",
     "vitest": "^1.0.0"

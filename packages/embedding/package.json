@@ -27,16 +27,39 @@
   },
   "scripts": {
     "build": "tsup",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@rag-sdk/core": "workspace:*"
   },
   "peerDependencies": {
-    "openai": "^4.0.0"
+    "openai": "^4.0.0",
+    "cohere-ai": "^7.0.0",
+    "voyageai": "^0.2.0",
+    "@huggingface/transformers": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "cohere-ai": {
+      "optional": true
+    },
+    "voyageai": {
+      "optional": true
+    },
+    "@huggingface/transformers": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "openai": "^4.0.0",
+    "cohere-ai": "^7.0.0",
+    "voyageai": "^0.2.0",
+    "@huggingface/transformers": "^3.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
   }
 }

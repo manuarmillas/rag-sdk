@@ -7,10 +7,10 @@ A modular, type-safe SDK for building Retrieval-Augmented Generation (RAG) pipel
 | Package | Description |
 |---------|-------------|
 | `@rag-sdk/core` | Core ports, pipelines (ingest, query, generate, hybrid search), error types, and zero-dep chunkers |
-| `@rag-sdk/embedding` | Embedding provider adapters (OpenAI) |
+| `@rag-sdk/embedding` | Embedding provider adapters (OpenAI, Ollama, Cohere, VoyageAI, Local) |
 | `@rag-sdk/store` | Vector store adapters — Memory (zero deps), Qdrant, Pinecone, pgvector |
-| `@rag-sdk/generator` | LLM generation adapters (OpenAI) |
-| `@rag-sdk/reranker` | Reranker adapters (Cohere) |
+| `@rag-sdk/generator` | LLM generation adapters (OpenAI, Ollama, Cohere) |
+| `@rag-sdk/reranker` | Reranker adapters (Cohere, Local cross-encoder) |
 | `@rag-sdk/chunker` | Semantic chunking (requires EmbeddingProvider) |
 
 ## Installation
@@ -155,15 +155,100 @@ const store = createQdrantStore({
 });
 ```
 
+## V3 Quickstart — Local & Multi-Provider
+
+### Local Reranker (free, offline, zero API keys)
+
+```ts
+import { createLocalReranker } from '@rag-sdk/reranker';
+
+const sdk = rag({
+  provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  store: createMemoryStore({ dimensions: 1536 }),
+  reranker: createLocalReranker(), // 80MB model downloads on first use
+});
+
+// Same API — swaps adapter without app code changes
+const result = await sdk.query('relevant docs', { topK: 10, rerank: { topN: 3 } });
+```
+
+### Ollama Embedding (local, zero deps)
+
+```ts
+import { createOllamaEmbedding } from '@rag-sdk/embedding';
+
+const sdk = rag({
+  provider: createOllamaEmbedding({ model: 'nomic-embed-text' }),
+  store: createMemoryStore({ dimensions: 768 }),
+});
+// Requires Ollama running at localhost:11434
+```
+
+### Ollama Generator (local, streaming)
+
+```ts
+import { createOllamaEmbedding } from '@rag-sdk/embedding';
+import { createOllamaGenerator } from '@rag-sdk/generator';
+
+const sdk = rag({
+  provider: createOllamaEmbedding({ model: 'nomic-embed-text' }),
+  store: createMemoryStore({ dimensions: 768 }),
+  generator: createOllamaGenerator({ model: 'llama3.2' }),
+});
+
+const result = await sdk.generate('What is RAG?');
+console.log(result.answer);
+
+// Streaming
+for await (const token of sdk.generateStream('Explain step by step')) {
+  process.stdout.write(token);
+}
+```
+
+### Cohere Embedding + Generator
+
+```ts
+import { createCohereEmbedding } from '@rag-sdk/embedding';
+import { createCohereGenerator } from '@rag-sdk/generator';
+
+const sdk = rag({
+  provider: createCohereEmbedding({ apiKey: process.env.COHERE_API_KEY }),
+  store: createMemoryStore({ dimensions: 1024 }),
+  generator: createCohereGenerator({ apiKey: process.env.COHERE_API_KEY }),
+});
+```
+
+### VoyageAI Embedding
+
+```ts
+import { createVoyageEmbedding } from '@rag-sdk/embedding';
+
+const sdk = rag({
+  provider: createVoyageEmbedding({ apiKey: process.env.VOYAGE_API_KEY }),
+  store: createMemoryStore({ dimensions: 512 }),
+});
+```
+
+### Local Embeddings (free, offline)
+
+```ts
+import { createLocalEmbedding } from '@rag-sdk/embedding';
+
+const sdk = rag({
+  provider: createLocalEmbedding(), // 80MB model, CPU-only, no API keys
+  store: createMemoryStore({ dimensions: 384 }),
+});
+```
+
 ## Architecture
 
 ```
 @rag-sdk/core        — ports + pipelines + errors + default chunkers
     ↑
-    ├── @rag-sdk/embedding   — EmbeddingProvider adapters
-    ├── @rag-sdk/store       — VectorStore adapters (memory, Qdrant, Pinecone, pgvector)
-    ├── @rag-sdk/generator   — Generator adapters (OpenAI LLM)
-    ├── @rag-sdk/reranker    — Reranker adapters (Cohere)
+    ├── @rag-sdk/embedding   — EmbeddingProvider: OpenAI, Ollama, Cohere, VoyageAI, Local
+    ├── @rag-sdk/store       — VectorStore: Memory, Qdrant, Pinecone, pgvector
+    ├── @rag-sdk/generator   — Generator: OpenAI, Ollama, Cohere
+    ├── @rag-sdk/reranker    — Reranker: Cohere, Local (cross-encoder)
     └── @rag-sdk/chunker     — SemanticChunker (uses EmbeddingProvider port)
 ```
 

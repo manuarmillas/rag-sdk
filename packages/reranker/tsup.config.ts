@@ -8,5 +8,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   outDir: 'dist',
-  external: ['cohere-ai'],
+  external: ['cohere-ai', '@huggingface/transformers'],
 });

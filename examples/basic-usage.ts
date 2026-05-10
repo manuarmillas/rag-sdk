@@ -163,9 +163,10 @@ these states to perform algorithms. Shor's algorithm factors large numbers effic
 async function hybridSearch() {
   // A KeywordSearcher can be any object implementing the port.
   // Here we show a toy example; in production you'd use a full-text index.
-  const toyKeywordSearcher: any = {
+  const toyKeywordSearcher = {
     id: 'toy-keyword',
-    async keywordSearch(text: string, options: any) {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async keywordSearch(text: string, _options: Record<string, unknown>) {
       // In production: delegate to Elasticsearch, Meilisearch, or Qdrant payload index.
       // This toy returns a mock result for demonstration.
       if (text.toLowerCase().includes('bolt')) {
@@ -208,6 +209,7 @@ async function hybridSearch() {
 // 7. Reranking — post-retrieval relevance boost
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function reranking() {
   const sdk = rag({
     provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY! }),
@@ -236,6 +238,7 @@ async function reranking() {
 // 8. Production store — Qdrant
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function productionQdrant() {
   // Requires: pnpm add @qdrant/js-client-rest
   // Requires: a running Qdrant instance (default: http://localhost:6333)
@@ -261,6 +264,7 @@ async function productionQdrant() {
 // 9. Production store — pgvector (with existing pg.Pool)
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
 async function productionPgVector() {
   // Requires: pnpm add pg
   // Requires: a running PostgreSQL instance with pgvector extension

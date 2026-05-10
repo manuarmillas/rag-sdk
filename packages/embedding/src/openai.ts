@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
 import type { EmbeddingProvider } from '@rag-sdk/core';
 import { ProviderError, ConfigurationError } from '@rag-sdk/core';
+import { requirePeer } from './runtime.js';
 
 export interface CreateOpenAIConfig {
   apiKey?: string;
@@ -9,7 +9,6 @@ export interface CreateOpenAIConfig {
 }
 
 export function createOpenAI(config?: CreateOpenAIConfig): EmbeddingProvider {
-  const client = new OpenAI({ apiKey: config?.apiKey });
   const modelId = config?.model ?? 'text-embedding-3-small';
   const dimensions = config?.dimensions;
 
@@ -28,6 +27,10 @@ export function createOpenAI(config?: CreateOpenAIConfig): EmbeddingProvider {
 
     async embed(text: string): Promise<number[]> {
       try {
+        await requirePeer('openai', 'Package "openai" is required for OpenAI embeddings');
+        const { default: OpenAI } = await import('openai');
+        const client = new OpenAI({ apiKey: config?.apiKey });
+
         const response = await client.embeddings.create({
           model: modelId,
           input: text,
@@ -41,6 +44,10 @@ export function createOpenAI(config?: CreateOpenAIConfig): EmbeddingProvider {
 
     async embedBatch(texts: string[]): Promise<number[][]> {
       try {
+        await requirePeer('openai', 'Package "openai" is required for OpenAI embeddings');
+        const { default: OpenAI } = await import('openai');
+        const client = new OpenAI({ apiKey: config?.apiKey });
+
         const response = await client.embeddings.create({
           model: modelId,
           input: texts,

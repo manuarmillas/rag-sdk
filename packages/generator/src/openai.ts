@@ -1,7 +1,7 @@
-import OpenAI from 'openai';
 import type { Generator, GenerationResult, GenerateOptions, GenerateRequest } from '@rag-sdk/core';
 import type { Metadata } from '@rag-sdk/core';
 import { ProviderError } from '@rag-sdk/core';
+import { requirePeer } from './runtime.js';
 import { buildPrompt } from './prompt.js';
 
 export interface CreateOpenAIGeneratorConfig {
@@ -13,10 +13,6 @@ export interface CreateOpenAIGeneratorConfig {
 export function createOpenAIGenerator(
   config?: CreateOpenAIGeneratorConfig,
 ): Generator {
-  const client = new OpenAI({
-    apiKey: config?.apiKey,
-    baseURL: config?.baseURL,
-  });
   const modelId = config?.model ?? 'gpt-4o-mini';
 
   return {
@@ -30,6 +26,13 @@ export function createOpenAIGenerator(
       const prompt = buildPrompt(request);
 
       try {
+        await requirePeer('openai', 'Package "openai" is required for OpenAI generation');
+        const { default: OpenAI } = await import('openai');
+        const client = new OpenAI({
+          apiKey: config?.apiKey,
+          baseURL: config?.baseURL,
+        });
+
         const response = await client.chat.completions.create({
           model: modelId,
           messages: [
@@ -70,6 +73,13 @@ export function createOpenAIGenerator(
       const prompt = buildPrompt(request);
 
       try {
+        await requirePeer('openai', 'Package "openai" is required for OpenAI generation');
+        const { default: OpenAI } = await import('openai');
+        const client = new OpenAI({
+          apiKey: config?.apiKey,
+          baseURL: config?.baseURL,
+        });
+
         const stream = await client.chat.completions.create({
           model: modelId,
           messages: [
