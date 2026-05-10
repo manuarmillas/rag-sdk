@@ -1,12 +1,13 @@
 /**
- * RAG SDK — Basic Usage Examples
- * ===============================
+ * RAG SDK — Usage Examples (V3)
+ * ================================
  *
- * Demonstrates the full V2 API surface:
+ * Demonstrates the full V2 + V3 API surface:
  *   - Ingest, query, generate, stream
+ *   - Local reranker (CPU, free) and Cohere reranker
+ *   - Ollama, Cohere, VoyageAI, and local embedding providers
  *   - Markdown and semantic chunking
  *   - Hybrid search (vector + keyword)
- *   - Reranking with Cohere
  *   - Production stores (Qdrant, Pinecone, pgvector)
  *   - Custom metadata and error handling
  *
@@ -15,11 +16,11 @@
  *   pnpm add @rag-sdk/generator @rag-sdk/reranker @rag-sdk/chunker
  */
 
-import { rag, MarkdownChunker, ConfigurationError } from '@rag-sdk/core';
-import { createOpenAI } from '@rag-sdk/embedding';
+import { rag, MarkdownChunker, ConfigurationError, DimensionMismatchError } from '@rag-sdk/core';
+import { createOpenAI, createOllamaEmbedding, createCohereEmbedding, createVoyageEmbedding, createLocalEmbedding } from '@rag-sdk/embedding';
 import { createMemoryStore, createQdrantStore } from '@rag-sdk/store';
-import { createOpenAIGenerator } from '@rag-sdk/generator';
-import { createCohereReranker } from '@rag-sdk/reranker';
+import { createOpenAIGenerator, createOllamaGenerator } from '@rag-sdk/generator';
+import { createCohereReranker, createLocalReranker } from '@rag-sdk/reranker';
 import { SemanticChunker } from '@rag-sdk/chunker';
 
 // ---------------------------------------------------------------------------
@@ -344,8 +345,91 @@ async function customMetadata() {
 // Run all examples (comment out those requiring external services)
 // ---------------------------------------------------------------------------
 
+// ─── V3: Local reranker (CPU, free) ─────────────────────────────────────────
+async function localReranker() {
+  const sdk = rag({
+    provider: createOpenAI({ apiKey: process.env.OPENAI_API_KEY! }),
+    store: createMemoryStore({ dimensions: 1536 }),
+    reranker: createLocalReranker(), // 80MB cross-encoder, CPU
+  });
+
+  await sdk.ingest([{ content: 'Document about machine learning and neural networks.' }]);
+  const result = await sdk.query('neural networks', { topK: 10, rerank: { topN: 3 } });
+  console.log('🧠 Local reranker (top result):', result.results[0]?.content);
+}
+
+// ─── V3: Ollama embedding + generator ──────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function ollamaWorkflow() {
+  const sdk = rag({
+    provider: createOllamaEmbedding({ model: 'nomic-embed-text' }),
+    store: createMemoryStore({ dimensions: 768 }),
+    generator: createOllamaGenerator({ model: 'llama3.2' }),
+  });
+
+  await sdk.ingest([{ content: 'RAG SDK supports local-first inference with Ollama.' }]);
+  const result = await sdk.generate('What does RAG SDK support?');
+  console.log('🦙 Ollama answer:', result.answer);
+}
+
+// ─── V3: Local embedding + local reranker (100% offline) ────────────────────
+async function fullyLocal() {
+  const sdk = rag({
+    provider: createLocalEmbedding(),
+    store: createMemoryStore({ dimensions: 384 }),
+    reranker: createLocalReranker(),
+  });
+
+  await sdk.ingest([{ content: 'RAG SDK runs fully offline with no API keys.' }]);
+  const result = await sdk.query('offline', { topK: 5, rerank: { topN: 3 } });
+  console.log('🏠 Fully local result:', result.results[0]?.content);
+}
+
+// ─── V3: Cohere embedding ──────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function cohereEmbedding() {
+  const sdk = rag({
+    provider: createCohereEmbedding({ apiKey: process.env.COHERE_API_KEY! }),
+    store: createMemoryStore({ dimensions: 1024 }),
+  });
+
+  await sdk.ingest([{ content: 'Cohere provides high-quality multilingual embeddings.' }]);
+  const result = await sdk.query('multilingual');
+  console.log('🔗 Cohere embedding result:', result.results[0]?.content);
+}
+
+// ─── V3: VoyageAI embedding ────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function voyageEmbedding() {
+  const sdk = rag({
+    provider: createVoyageEmbedding({ apiKey: process.env.VOYAGE_API_KEY! }),
+    store: createMemoryStore({ dimensions: 512 }),
+  });
+
+  await sdk.ingest([{ content: 'VoyageAI optimizes embeddings for retrieval quality.' }]);
+  const result = await sdk.query('retrieval quality');
+  console.log('🚢 Voyage embedding result:', result.results[0]?.content);
+}
+
+// ─── V3: Dimension mismatch error ──────────────────────────────────────────
+async function dimError() {
+  try {
+    const sdk = rag({
+      provider: createLocalEmbedding(),        // 384d
+      store: createMemoryStore({ dimensions: 1536 }), // expects 1536d
+    });
+    await sdk.ingest([{ content: 'This will throw a dimension mismatch error.' }]);
+  } catch (err) {
+    if (err instanceof DimensionMismatchError) {
+      console.log('⚠️  Caught dimension mismatch:', err.message.slice(0, 60));
+    }
+  }
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────
+
 async function main() {
-  console.log('=== RAG SDK — Usage Examples ===\n');
+  console.log('=== RAG SDK V3 — Usage Examples ===\n');
 
   await basicRetrieve();
   await basicGenerate();
@@ -358,6 +442,16 @@ async function main() {
   // await productionPgVector();   // requires PostgreSQL + pgvector
   await errorHandling();
   await customMetadata();
+
+  // ── V3 features (local / no setup needed) ──
+  await localReranker();        // requires @huggingface/transformers
+  await fullyLocal();           // requires @huggingface/transformers
+  await dimError();             // no setup needed
+
+  // ── V3 features (require external services) ──
+  // await ollamaWorkflow();    // requires Ollama running
+  // await cohereEmbedding();   // requires COHERE_API_KEY
+  // await voyageEmbedding();   // requires VOYAGE_API_KEY
 }
 
 main().catch(console.error);
